@@ -1,0 +1,40 @@
+/* General styling for the navbar */
+.navbar-custom {
+    background-color: #2e266d; /* Dark color */
+    height: 60px;
+    padding: 15px 130px 15px 80px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.navbar-custom .navbar-brand img {
+    height: 50px;
+}
+
+.navbar-custom .navbar-nav {
+    display: flex;
+}
+
+.navbar-custom .nav-link {
+    color: white;
+    margin: 10px;
+}
+
+.navbar-custom .nav-link.active {
+    font-weight: bold;
+}
+
+.navbar-custom .dropdown-menu {
+    background-color: #2e266d; /* Ensure this matches the navbar background */
+}
+
+.navbar-custom .dropdown-menu a {
+    color: white;
+}
+
+/* Style for the dropdown user image */
+.navbar-custom .dropdown img {
+    height: 40px;
+    border-radius: 50%;
+}
