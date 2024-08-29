@@ -28,6 +28,10 @@ class DashApp:
             'SDG 8', 'SDG 9', 'SDG 10', 'SDG 11', 'SDG 12', 'SDG 13', 
             'SDG 14', 'SDG 15', 'SDG 16', 'SDG 17'
         ]
+        self.all_status = [
+            'WAITING FOR PUBLICATION', 'UNDER EVALUATION', 
+            'TO BE PRESENTED', 'ACCEPTED', 'PUBLISHED'
+        ]
 
         self.setup_layout()
 
@@ -297,7 +301,10 @@ class DashApp:
                     ),
                     width=4
                 )
-            ], style={"marginTop": "20px", "padding": "10px", "border": "1px solid #ddd"})
+            ], style={"marginTop": "20px", "padding": "10px", "border": "1px solid #ddd"}),
+            dbc.Row([
+                dbc.Col(dcc.Graph(id='research_status_chart'), width=12, style={"height": "400px", "overflow": "hidden"}),
+            ], style={"marginTop": "20px"})
         ])
 
         tab2_content = dbc.Container([
@@ -361,7 +368,6 @@ class DashApp:
 
         return fig_line
 
-
     def update_pie_chart(self, selected_colleges, selected_status, selected_years):
         df = self.data_loader.get_filtered_data(selected_colleges, selected_status, selected_years)
         
@@ -390,8 +396,6 @@ class DashApp:
         )
 
         return fig_pie
-
-
 
     def update_scopus_bar_plot(self, selected_colleges, selected_status, selected_years):
         df = self.data_loader.get_filtered_data(selected_colleges, selected_status, selected_years)
@@ -529,6 +533,47 @@ class DashApp:
         
         return fig
 
+    def update_research_status_chart(self, selected_colleges, selected_status, selected_years):
+        df = self.data_loader.get_filtered_data(selected_colleges, selected_status, selected_years)
+        
+        if df.empty:
+            print("DataFrame is empty after filtering")
+            return px.bar(title="No data available")
+
+        status_count = df.groupby(['PUBLISHED', 'College']).size().reset_index(name='Count')
+        pivot_df = status_count.pivot(index='PUBLISHED', columns='College', values='Count').reindex(self.all_status).fillna(0)
+        pivot_df['Total'] = pivot_df.sum(axis=1)
+        pivot_df = pivot_df.sort_values(by='Total', ascending=False).drop(columns='Total')
+        pivot_df = pivot_df.reindex(self.all_status)
+
+        if pivot_df.empty:
+            print("Pivot DataFrame is empty after processing")
+            return px.bar(title="No data available")
+
+        fig = go.Figure()
+
+        for college in pivot_df.columns:
+            fig.add_trace(go.Bar(
+                y=pivot_df.index,
+                x=pivot_df[college],
+                name=college,
+                orientation='h',
+                marker_color=self.palette_dict.get(college, 'grey') 
+            ))
+
+        fig.update_layout(
+            barmode='stack',  
+            xaxis_title='Count',
+            yaxis_title='Research Status',
+            title='Colleges Research Status',
+            yaxis=dict(
+                autorange='reversed',  
+                tickvals=self.all_status,  
+                ticktext=self.all_status  
+            )
+        )
+        
+        return fig
 
     def register_callbacks(self):
         self.app.callback(
@@ -590,6 +635,15 @@ class DashApp:
                 Input('years', 'value')
             ]
         )(self.update_sdg_chart)
+
+        self.app.callback(
+            Output('research_status_chart', 'figure'),
+            [
+                Input('college', 'value'),
+                Input('status', 'value'),
+                Input('years', 'value')
+            ]
+        )(self.update_research_status_chart)
 
 
     def update_grid(self, selected_colleges, selected_status, selected_years):
