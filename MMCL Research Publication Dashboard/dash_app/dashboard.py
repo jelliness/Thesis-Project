@@ -146,171 +146,81 @@ class DashApp:
             body=True,
             style={"height": "100vh", "display": "flex", "flexDirection": "column"}
         )
-        upper_dash = dbc.Container([
+        upper_dash= dbc.Container([
             dbc.Row([
-                dbc.Col(
-                    dbc.Row(
-                        [
-                            dbc.Col(
-                                html.Img(
-                                    src="https://img.icons8.com/?size=100&id=FGE1It15NOOh&format=png&color=000000",
-                                    style={"width": "50px", "height": "50px"}
-                                ),
-                                width=4,
-                                style={"display": "flex", "alignItems": "center", "justifyContent": "center"}
-                            ),
-                            dbc.Col(
-                                dbc.Col(
-                                    [
-                                        html.Div("Research Papers", style={
-                                                                                "marginBottom": "5px",
-                                                                                "whiteSpace": "nowrap", 
-                                                                                "textAlign": "center"
-                                                                            }),
-                                        html.Div(len(self.data_loader.get_all_data()), style={"fontSize": "24px", "fontWeight": "bold"})  
-                                    ],
-                                    style={"display": "flex", "flexDirection": "column", "alignItems": "center", "justifyContent": "center"}
-                                ),
-                                width=8
-                            )
-                        ],
-                        align="center"
-                    ),
-                    width=4,
-                    style={"border": "1px solid #ddd", "padding": "10px", "display": "flex", "alignItems": "center", "justifyContent": "center"}
-                ),
+                dbc.Col([
+                    html.Div([
+                        html.H4("Total Research Publications", style={'textAlign': 'center'}),
+                        html.H2(str(len(self.data_loader.get_all_data())), style={'textAlign': 'center', 'fontSize': '60px'}),
+                    ], style={'border': '1px solid black', 'padding': '20px', 'height': '100%'})
+                ], width=3),
 
-                dbc.Col(
-                    dbc.Row(
-                        [
-                            dbc.Col(
-                                html.Img(
-                                    src="https://img.icons8.com/?size=100&id=25592&format=png&color=000000",
-                                    style={"width": "50px", "height": "50px"}
-                                ),
-                                width=4,
-                                style={"display": "flex", "alignItems": "center", "justifyContent": "center"}
-                            ),
-                            dbc.Col(
-                                dbc.Col(
-                                    [
-                                        html.Div("Published Papers", style={
-                                                                                "marginBottom": "5px",
-                                                                                "whiteSpace": "nowrap", 
-                                                                                "textAlign": "center"
-                                                                            }),
-                                        html.Div(len(self.data_loader.filter_data('PUBLISHED','PUBLISHED',invert=False)), style={"fontSize": "24px", "fontWeight": "bold"})  # Increase font size and weight
-                                    ],
-                                    style={"display": "flex", "flexDirection": "column", "alignItems": "center", "justifyContent": "center"}
-                                ),
-                                width=8
-                            )
-                        ],
-                        align="center"
-                    ),
-                    width=4,
-                    style={"border": "1px solid #ddd", "padding": "10px", "display": "flex", "alignItems": "center", "justifyContent": "center"}
-                ),
+                dbc.Col([
+                    dbc.Row([
+                        dbc.Col(html.Div([
+                            html.H6("SCOPUS", style={'textAlign': 'center'}),
+                            html.H3(str(len(self.data_loader.filter_data('Scopus or Non-Scopus', 'Scopus', invert=False))), style={'textAlign': 'center'})
+                        ], style={'textAlign': 'center', 'border': '1px solid black', 'padding': '20px'}), width=3),
+                        
+                        dbc.Col(html.Div([
+                            html.H6("JOURNAL", style={'textAlign': 'center'}),
+                            html.H3(str(len(self.data_loader.filter_data('Publication Format', 'Proceeding', invert=True))), style={'textAlign': 'center'})
+                        ], style={'textAlign': 'center', 'border': '1px solid black', 'padding': '20px'}), width=3),
+                        
+                        dbc.Col(html.Div([
+                            html.H6("PUBLISHED", style={'textAlign': 'center'}),
+                            html.H3(str(len(self.data_loader.filter_data('PUBLISHED','PUBLISHED',invert=False))), style={'textAlign': 'center'})
+                        ], style={'textAlign': 'center', 'border': '1px solid black', 'padding': '20px'}), width=3),
 
-                dbc.Col(
-                    dbc.Row(
-                        [
-                            dbc.Col(
-                                html.Img(
-                                    src="https://img.icons8.com/?size=100&id=37816&format=png&color=000000",
-                                    style={"width": "50px", "height": "50px"}
-                                ),
-                                width=4,
-                                style={"display": "flex", "alignItems": "center", "justifyContent": "center"}
-                            ),
-                            dbc.Col(
-                                dbc.Col(
-                                    [
-                                        html.Div("On-going Publication", style={
-                                                                                "marginBottom": "5px",
-                                                                                "whiteSpace": "nowrap", 
-                                                                                "textAlign": "center"
-                                                                            }),
-                                        html.Div(len(self.data_loader.filter_data_by_list('PUBLISHED',['PUBLISHED','ACCEPTED'],invert=True)), style={"fontSize": "24px", "fontWeight": "bold"})  
-                                    ],
-                                    style={"display": "flex", "flexDirection": "column", "alignItems": "center", "justifyContent": "center"}
-                                ),
-                                width=8
-                            )
-                        ],
-                        align="center"
-                    ),
-                    width=4,
-                    style={"border": "1px solid #ddd", "padding": "10px", "display": "flex", "alignItems": "center", "justifyContent": "center"}
-                )
-        ])], style={"marginBottom": "20px"})
+                        dbc.Col(html.Div([
+                            html.H6("ON-GOING", style={'textAlign': 'center'}),
+                            html.H3(str(len(self.data_loader.filter_data_by_list('PUBLISHED',['PUBLISHED','ACCEPTED'],invert=True))), style={'textAlign': 'center'})
+                        ], style={'textAlign': 'center', 'border': '1px solid black', 'padding': '20px'}), width=3),
+                    ]),
+                    dbc.Row([
+                        dbc.Col(html.Div([
+                            html.H6("NON-SCOPUS", style={'textAlign': 'center'}),
+                            html.H3(str(len(self.data_loader.filter_data('Scopus or Non-Scopus', 'Scopus', invert=True))), style={'textAlign': 'center'})
+                        ], style={'textAlign': 'center', 'border': '1px solid black', 'padding': '20px'}), width=3),
+                        
+                        dbc.Col(html.Div([
+                            html.H6("PROCEEDINGS", style={'textAlign': 'center'}),
+                            html.H3(str(len(self.data_loader.filter_data('Publication Format', 'Proceeding', invert=False))), style={'textAlign': 'center'})
+                        ], style={'textAlign': 'center', 'border': '1px solid black', 'padding': '20px'}), width=3),
+                        
+                        dbc.Col(html.Div([
+                            html.H6("NEW", style={'textAlign': 'center'}),
+                            html.H3(len(self.data_loader.filter_data('PUBLISHED','ACCEPTED',invert=False)), style={'textAlign': 'center'})
+                        ], style={'textAlign': 'center', 'border': '1px solid black', 'padding': '20px', 'height': '100%'}), width=6),
+                    ]),
+                ], width=9),
+            ])
+        ], style={'marginBottom': '20px'})
 
 
         main_dash = dbc.Container([
             dbc.Row([
                 dbc.Col(dcc.Graph(id='college_line_plot'), width=8, style={"height": "400px", "overflow": "hidden"}),
                 dbc.Col(dcc.Graph(id='college_pie_chart'), width=4, style={"height": "400px", "overflow": "hidden"})
-            ], style={"marginTop": "20px", "padding": "10px", "border": "1px solid #ddd"}),
+            ], style={"margin": "20px", "padding": "10px"}),
 
             dbc.Row([
-            dbc.Col(dcc.Graph(id='scopus_bar_plot'), width=8, style={"height": "400px", "overflow": "hidden"}),
-            dbc.Col(
-                dbc.Card(
-                    children=[
-                        dbc.CardBody(
-                            [
-                                dbc.Row(dbc.Col(html.H5("Scopus"), style={"textAlign": "center", "marginBottom": "10px"})),
-                                dbc.Row(dbc.Col(f"{len(self.data_loader.filter_data('Scopus or Non-Scopus', 'Scopus', invert=False))}", style={"textAlign": "center"})),
-                                dbc.Row(dbc.Col(html.H5("Non-Scopus"), style={"textAlign": "center", "marginTop": "30px", "marginBottom": "10px"})),
-                                dbc.Row(dbc.Col(f"{len(self.data_loader.filter_data('Scopus or Non-Scopus', 'Non-Scopus', invert=False))}", style={"textAlign": "center"}))
-                            ],
-                            style={"padding": "20px"}
-                        )
-                    ],
-                    style={"border": "1px solid #ddd", "height": "400px", "overflow": "hidden"}
-                ),width=4
-            )], style={"marginTop": "20px", "padding": "10px", "border": "1px solid #ddd"}),
-            dbc.Row([
-                dbc.Col(dcc.Graph(id='publication_format_bar_plot'), width=8, style={"height": "400px", "overflow": "hidden"}),
-                dbc.Col(
-                    dbc.Card(
-                        children=[
-                            dbc.CardBody(
-                                [
-                                    dbc.Row(
-                                        dbc.Col(
-                                            html.Div([
-                                                html.H5("Proceeding", style={"marginBottom": "5px"}),
-                                                html.P(f"{len(self.data_loader.filter_data('Publication Format', 'Proceeding', invert=False))}", style={"fontSize": "20px", "marginBottom": "30px"})
-                                            ], style={"textAlign": "center"})
-                                        )
-                                    ),
-                                    dbc.Row(
-                                        dbc.Col(
-                                            html.Div([
-                                                html.H5("Journal", style={"marginBottom": "5px"}),
-                                                html.P(f"{len(self.data_loader.filter_data('Publication Format', 'Journal', invert=False))}", style={"fontSize": "20px"})
-                                            ], style={"textAlign": "center"})
-                                        )
-                                    )
-                                ],
-                                style={"padding": "20px"}
-                            )
-                        ],
-                        style={"border": "1px solid #ddd", "height": "400px", "overflow": "hidden"}
-                    ),
-                    width=4
-                )
-            ], style={"marginTop": "20px", "padding": "10px", "border": "1px solid #ddd"}),
-            dbc.Row([
-                dbc.Col(dcc.Graph(id='research_status_chart'), width=12, style={"height": "400px", "overflow": "hidden"}),
-            ], style={"marginTop": "20px"})
-        ])
+            dbc.Col(dcc.Graph(id='scopus_bar_plot',style={"margin":"5px"}), width=6, style={"height": "450px", "overflow": "hidden", "border": "1px solid #ddd","padding":"20px"}),
+            dbc.Col(dcc.Graph(id='publication_format_bar_plot',style={"margin":"5px"}), width=6, style={"height": "450px", "overflow": "hidden", "border": "1px solid #ddd","padding":"20px"}),
+        ])])
 
         tab2_content = dbc.Container([
             dbc.Row([
                 dbc.Col(dcc.Graph(id='sdg_bar_chart'), width=12, style={"height": "400px", "overflow": "hidden"}),
-                dbc.Col(dcc.Graph(id='author_contribution_chart'), width=6,style={"height": "400px", "overflow": "hidden"})
+                dbc.Col(
+                    dbc.Row([
+                        dbc.Col(dcc.Graph(id='author_contribution_chart'), width=6,style={"height": "400px", "overflow": "hidden"}),
+                        dbc.Col(dcc.Graph(id='research_status_chart'), width=6,style={"height": "400px", "overflow": "hidden"})]
+
+                    ),
+                    width=12,style={"height": "400px", "overflow": "hidden", "marginTop":"20px"}
+                )
+                
             ], style={"marginTop": "20px"}),
         ])
 
