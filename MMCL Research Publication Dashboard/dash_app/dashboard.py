@@ -8,12 +8,13 @@ import dash_ag_grid as dag
 import pandas as pd
 from collections import Counter
 import plotly.graph_objects as go
+import plotly.express as px
 
 class DashApp:
     def __init__(self, server):
         self.server = server
         self.app = Dash(__name__, server=server, routes_pathname_prefix='/dash/', external_stylesheets=[dbc.themes.BOOTSTRAP])
-        self.data_loader = DataLoader('app/data/AcadResearchDataset.csv')
+        self.data_loader = DataLoader('app/data/AcadResearchDatasetWithCountry.csv')
         self.data_loader.connect()
         self.PLOTLY_LOGO = "https://i.imghippo.com/files/8hU5H1724158029.png"
         self.palette_dict = {
@@ -34,7 +35,6 @@ class DashApp:
         ]
 
         self.setup_layout()
-
         self.register_callbacks()
 
     def get_total_counts(self):
@@ -146,7 +146,7 @@ class DashApp:
             body=True,
             style={"height": "100vh", "display": "flex", "flexDirection": "column"}
         )
-        upper_dash= dbc.Container([
+        upper_dash = dbc.Container([
             dbc.Row([
                 dbc.Col([
                     html.Div([
@@ -197,17 +197,23 @@ class DashApp:
             ])
         ], style={'marginBottom': '20px'})
 
-
         main_dash = dbc.Container([
+            # Added by Nicole Cabansag
+            dbc.Row([
+                dbc.Col([
+                    html.Div(id='world_map_chart', children=[])
+                ], width=12)
+            ]),
             dbc.Row([
                 dbc.Col(dcc.Graph(id='college_line_plot'), width=8, style={"height": "400px", "overflow": "hidden"}),
                 dbc.Col(dcc.Graph(id='college_pie_chart'), width=4, style={"height": "400px", "overflow": "hidden"})
             ], style={"margin": "20px", "padding": "10px"}),
 
             dbc.Row([
-            dbc.Col(dcc.Graph(id='scopus_bar_plot',style={"margin":"5px"}), width=6, style={"height": "450px", "overflow": "hidden", "border": "1px solid #ddd","padding":"20px"}),
-            dbc.Col(dcc.Graph(id='publication_format_bar_plot',style={"margin":"5px"}), width=6, style={"height": "450px", "overflow": "hidden", "border": "1px solid #ddd","padding":"20px"}),
-        ])])
+                dbc.Col(dcc.Graph(id='scopus_bar_plot', style={"margin": "5px"}), width=6, style={"height": "450px", "overflow": "hidden", "border": "1px solid #ddd", "padding": "20px"}),
+                dbc.Col(dcc.Graph(id='publication_format_bar_plot', style={"margin": "5px"}), width=6, style={"height": "450px", "overflow": "hidden", "border": "1px solid #ddd", "padding": "20px"}),
+            ])
+        ], fluid=True)
 
         tab2_content = dbc.Container([
             dbc.Row([
@@ -224,10 +230,9 @@ class DashApp:
             ], style={"marginTop": "20px"}),
         ])
 
-        tab3 = dbc.Tab([grid], label="Grid", className="p-4")
         tab1 = dbc.Tab(main_dash, label="Overview")
         tab2 = dbc.Tab(tab2_content, label="Contributions")
-
+        tab3 = dbc.Tab([grid], label="Grid", className="p-4")
         tabs = dbc.Card(dbc.Tabs([tab1, tab2, tab3]))
 
         self.app.layout = html.Div([
@@ -245,6 +250,34 @@ class DashApp:
             )
         ])
 
+    def update_world_map(self, selected_colleges, selected_status, selected_years): # Added by Nicole Cabansag
+        df = self.data_loader.get_filtered_data(selected_colleges, selected_status, selected_years)
+
+        if 'Country' not in df.columns or df['Country'].isnull().all():
+            return dcc.Graph()  
+
+        country_counts = df.groupby('Country').size().reset_index(name='Count')
+
+        fig = px.choropleth(
+            country_counts,
+            locations='Country',  
+            locationmode='country names', 
+            color='Count',  
+            hover_name='Country',  
+            color_continuous_scale=px.colors.sequential.Plasma,  
+            title="International Conference Distribution"
+        )
+
+        fig.update_layout(
+            width=1300,  # Adjust width
+            height=600,  # Adjust height
+            geo=dict(showframe=False, showcoastlines=False),
+            title_x=0.5  
+        )
+
+
+        return dcc.Graph(figure=fig)
+    
     def update_line_plot(self, selected_colleges, selected_status, selected_years):
         df = self.data_loader.get_filtered_data(selected_colleges, selected_status, selected_years)
         
@@ -307,19 +340,19 @@ class DashApp:
 
         return fig_pie
 
-    def update_scopus_bar_plot(self, selected_colleges, selected_status, selected_years):
-        df = self.data_loader.get_filtered_data(selected_colleges, selected_status, selected_years)
-        
-        grouped_df = df.groupby(['Scopus or Non-Scopus', 'College']).size().reset_index(name='Count')
-        
+    def update_scopus_bar_plot(self, selected_colleges, selected_status, selected_years): # Modified by Nicole Cabansag
+        df = self.data_loader.get_filtered_data(selected_colleges, selected_status, selected_years) 
+        grouped_df = df.groupby(['College', 'Scopus or Non-Scopus', 'Publication Format']).size().reset_index(name='Count')
+        grouped_df['Scopus & Format'] = grouped_df['Scopus or Non-Scopus'] + ' (' + grouped_df['Publication Format'] + ')'
+
         fig_bar = px.bar(
             grouped_df,
             x='College',
             y='Count',
-            color='Scopus or Non-Scopus',
-            barmode='group',
+            color='Scopus & Format', 
+            barmode='stack',  
             labels={'Count': 'Number of Research Papers'},
-            title='Scopus vs. Non-Scopus per College'
+            title='Scopus vs. Non-Scopus per College with Publication Format'
         )
 
         fig_bar.update_layout(
@@ -484,8 +517,15 @@ class DashApp:
         )
         
         return fig
-
+    
     def register_callbacks(self):
+        self.app.callback( # Added by Nicole Cabansag
+            Output('world_map_chart', 'children'),
+            [Input('college', 'value'),
+             Input('status', 'value'),
+             Input('years', 'value')]
+        )(self.update_world_map)
+
         self.app.callback(
             Output('college_line_plot', 'figure'),
             [
@@ -562,7 +602,6 @@ class DashApp:
 
     def run(self, debug=False):
         self.app.run_server(debug=debug)
-
 
 def create_dash_app(flask_server):
     dash_app = DashApp(flask_server)
